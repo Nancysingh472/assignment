@@ -11,9 +11,12 @@ const OtpVerify = () => {
   const handleVerify = async () => {
     try {
       const res = await validateOTP(mobile, otp);
-      const token = res.data.token;
+      
+      const token = res.data.data.token;
 
-      localStorage.setItem("token", token);
+      localStorage.setItem("token",token);
+
+      // localStorage.setItem("user", JSON.stringify(res.data.user));
       alert("Login successful");
 
       navigate("/dashboard");

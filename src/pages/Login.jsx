@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-// import { generateOTP } from "../services/authService";
+import { generateOTP } from "../services/authService";
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
@@ -13,6 +13,7 @@ const Login = () => {
       navigate("/otp", { state: { mobile } });
     } catch (err) {
       alert("Failed to send OTP");
+      console.log(err);
     }
   };
 
