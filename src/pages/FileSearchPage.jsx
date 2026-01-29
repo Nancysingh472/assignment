@@ -106,42 +106,36 @@ export default function FileSearchPage() {
   const zip = new JSZip();
 
   for (let f of results) {
-    console.log("Fetching:", f.file_url);
     try {
-      const response = await fetch(f.file_url, {
-        mode: "cors"
-      });
+      const res = await fetch(f.file_url);
+      if (!res.ok) continue;
 
-      if (!response.ok) {
-        console.error("Fetch failed:", response.status, f.file_url);
-        continue; // skip this file
-      }
+      const blob = await res.blob();
+      if (!blob.size) continue;
 
-      const blob = await response.blob();
-
-      if (!blob || blob.size === 0) {
-        console.warn("Empty blob for file:", f.file_url);
-        continue;
-      }
-
-      const fileName = f.file_name || `file-${f.document_id || Date.now()}`;
-      zip.file(fileName, blob);
-      console.log("Added to zip:", fileName, blob.size, "bytes");
-
-    } catch (err) {
-      console.error("Skipping file due to error:", f.file_url, err);
+      zip.file(
+        f.file_name || `file-${Date.now()}`,
+        blob
+      );
+    } catch (e) {
+      console.error("skip", f.file_url);
     }
   }
 
-  const content = await zip.generateAsync({ type: "blob" });
-
-  if (content.size === 0) {
-    console.error("ZIP is empty!");
-  } else {
-    console.log("ZIP size:", content.size);
-    saveAs(content, "documents.zip");
-  }
+  const zipBlob = await zip.generateAsync({ type: "blob" });
+  saveAs(zipBlob, "documents.zip");
 };
+
+const getFileTypeFromUrl = (url) => {
+  if (!url) return "other";
+  const ext = url.split('.').pop().split('?')[0].toLowerCase();
+
+  if (["jpg", "jpeg", "png", "webp", "gif"].includes(ext)) return "image";
+  if (ext === "pdf") return "pdf";
+  return "other";
+};
+
+
 
 
 
@@ -243,23 +237,67 @@ export default function FileSearchPage() {
 
 
       
-      {previewFile && (
-        <div className="modal show d-block" onClick={() => setPreviewFile(null)}>
-          <div className="modal-dialog modal-lg" onClick={e => e.stopPropagation()}>
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">{previewFile.file_name}</h5>
-                <button className="btn-close" onClick={() => setPreviewFile(null)}></button>
-              </div>
-              <div className="modal-body">
-                {previewFile.file_type === "application/pdf" && <iframe src={previewFile.file_url} width="100%" height="500px" />}
-                {["image/jpeg", "image/png"].includes(previewFile.file_type) && <img src={previewFile.file_url} alt={previewFile.file_name} width="100%" />}
-                {!["image/jpeg", "image/png", "application/pdf"].includes(previewFile.file_type) && <p>Preview not supported for this file type.</p>}
-              </div>
-            </div>
-          </div>
+     {previewFile && (
+  <div className="modal show d-block" onClick={() => setPreviewFile(null)}>
+    <div className="modal-dialog modal-lg" onClick={e => e.stopPropagation()}>
+      <div className="modal-content">
+        <div className="modal-header">
+          <h5 className="modal-title">{previewFile.file_name}</h5>
+          <button className="btn-close" onClick={() => setPreviewFile(null)}></button>
         </div>
-      )}
+
+        <div className="modal-body" style={{ maxHeight: "80vh", overflow: "auto" }}>
+          {(() => {
+            const fileType = getFileTypeFromUrl(previewFile.file_url);
+
+            if (fileType === "image") {
+              return (
+                <img
+                  src={previewFile.file_url}
+                  alt={previewFile.file_name}
+                  style={{ width: "100%", height: "auto" }}
+                />
+              );
+            }
+
+            if (fileType === "pdf") {
+              return (
+                <object
+                  data={previewFile.file_url}
+                  type="application/pdf"
+                  width="100%"
+                  height="600px"
+                >
+                  <p>
+                    PDF preview not supported.
+                    <a href={previewFile.file_url} target="_blank" rel="noreferrer">
+                      Download
+                    </a>
+                  </p>
+                </object>
+              );
+            }
+
+            return (
+              <div className="text-center">
+                <p>Preview not supported for this file type.</p>
+                <a
+                  href={previewFile.file_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-primary"
+                >
+                  Download File
+                </a>
+              </div>
+            );
+          })()}
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }

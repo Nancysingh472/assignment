@@ -1,70 +1,91 @@
-# Getting Started with Create React App
+# File Search & Document Management System
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project is a React-based document search and management application developed as part of a frontend assignment.  
+It provides an interface to search, preview, and download documents stored on AWS S3 using secure APIs.
 
-## Available Scripts
+The focus of this project is clean UI, proper state handling, responsive design, and structured Git workflow.
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## Project Overview
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+The application allows users to filter and search documents using multiple criteria such as category, tags, and date range.  
+Users can preview supported file types directly in the browser and download files individually or in bulk.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+This assignment demonstrates:
 
-### `npm test`
+- Frontend development skills using React
+- Application state management
+- Responsive UI design
+- API integration
+- Proper usage of Git and version control best practices
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## Features
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- Search documents using:
+  - Major Head
+  - Minor Head
+  - Tags (with auto-suggestions)
+  - Date range
+- Preview supported files:
+  - PDF files
+  - Images (JPG, PNG, WEBP)
+- Download single documents
+- Download multiple documents as a ZIP
+- Responsive UI using Bootstrap
+- Graceful handling of unsupported file types
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+---
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## State Management
 
-### `npm run eject`
+- React Hooks (`useState`, `useEffect`) are used for managing component and application state
+- API calls are abstracted into service files
+- UI state such as filters, search results, and preview modal is handled cleanly within components
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+This approach keeps the code readable, modular, and easy to maintain.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+---
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Responsive Design
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+- Bootstrap is used for layout and styling
+- The application is responsive and works across different screen sizes
+- Tables, modals, and forms adapt well to smaller devices
 
-## Learn More
+A simple and clean UI has been used as per assignment guidelines.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+---
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Project Structure
 
-### Code Splitting
+src/
+├── pages/
+│ └── FileSearchPage.jsx
+├── services/
+│ └── fileService.js
+├── App.js
+└── index.js
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- `pages` contain UI components
+- `services` handle API interactions
+- Clear separation between UI and data logic
 
-### Analyzing the Bundle Size
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## Setup Instructions
 
-### Making a Progressive Web App
+### Prerequisites
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+- Node.js (v16 or higher recommended)
+- npm or yarn
 
-### Advanced Configuration
+### Steps to Run the Application
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+```bash
+npm install
+npm start
 
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```
