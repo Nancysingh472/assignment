@@ -19,8 +19,8 @@ export default function FileSearchPage() {
   const departments = ["Accounts", "HR", "IT", "Finance"];
 
   const token = localStorage.getItem("token");
-
-  // 🔹 Tag autocomplete
+  
+  
   useEffect(() => {
     if (!tagInput.trim() || !token) {
       setTagSuggestions([]);
@@ -32,14 +32,14 @@ export default function FileSearchPage() {
         const res = await fetchTags(tagInput, token);
         setTagSuggestions(res.data?.data || []);
       } catch (err) {
-        console.error("❌ TAG FETCH ERROR", err.response?.status, err);
+        console.error(err.response?.status, err);
       }
     }, 300);
 
     return () => clearTimeout(timer);
   }, [tagInput, token]);
 
-  // 🔹 Major Head change
+ 
   const handleMajorChange = (value) => {
     setMajorHead(value);
     setMinorHead("");
@@ -49,7 +49,7 @@ export default function FileSearchPage() {
     else setMinorOptions([]);
   };
 
-  // 🔹 Add / Remove tag
+  
   const addTag = (value) => {
     if (!tags.find(t => t.tag_name === value)) {
       setTags([...tags, { tag_name: value }]);
@@ -58,34 +58,42 @@ export default function FileSearchPage() {
     setTagSuggestions([]);
   };
   const removeTag = (i) => setTags(tags.filter((_, idx) => idx !== i));
-  // Convert yyyy-MM-dd → dd-MM-yyyy
-const formatDate = (dateStr) => {
-  if (!dateStr) return "";
-  const [year, month, day] = dateStr.split("-");
-  return `${day}-${month}-${year}`;
-};
+  
+  // const formatDate = (dateStr) => {
+  //   if (!dateStr) return "";
+  //   const [year, month, day] = dateStr.split("-");
+  //   return `${day}-${month}-${year}`;
+  // };
 
-  // 🔹 Search files
+  
   const handleSearch = async () => {
-    const payload = {
-      major_head: majorHead,
-      minor_head: minorHead,
-      tags,
-      from_date: formatDate(fromDate),
-      to_date: formatDate(toDate),
-      uploaded_by : 'nitin'
-    };
-   
-    try {
-      const res = await searchDocuments(payload, token);
-      setResults(res.data?.data || []);
-      console.log(res.data);
-    } catch (err) {
-      console.error(err.response?.status, err);
+  const payload = {
+    major_head: majorHead,
+    minor_head: minorHead,
+    from_date: fromDate || "",
+    to_date: toDate || "",
+    tags,
+    uploaded_by: "nitin",
+    start: 0,
+    length: 10,
+    filterId: "",
+    search: {
+      value: ""
     }
   };
 
-  // 🔹 Download individual file
+ 
+  try {
+    const res = await searchDocuments(payload, token);
+    
+    setResults(res.data?.data || []);
+  } catch (err) {
+    console.error(err.response || err);
+  }
+};
+
+
+ 
   const downloadFile = (file) => {
     const link = document.createElement("a");
     link.href = file.file_url;
@@ -93,23 +101,55 @@ const formatDate = (dateStr) => {
     link.click();
   };
 
-  // 🔹 Download all files as ZIP
-  const downloadAllZip = async () => {
-    const zip = new JSZip();
-    for (let f of results) {
-      const response = await fetch(f.file_url);
+  
+ const downloadAllZip = async () => {
+  const zip = new JSZip();
+
+  for (let f of results) {
+    console.log("Fetching:", f.file_url);
+    try {
+      const response = await fetch(f.file_url, {
+        mode: "cors"
+      });
+
+      if (!response.ok) {
+        console.error("Fetch failed:", response.status, f.file_url);
+        continue; // skip this file
+      }
+
       const blob = await response.blob();
-      zip.file(f.file_name, blob);
+
+      if (!blob || blob.size === 0) {
+        console.warn("Empty blob for file:", f.file_url);
+        continue;
+      }
+
+      const fileName = f.file_name || `file-${f.document_id || Date.now()}`;
+      zip.file(fileName, blob);
+      console.log("Added to zip:", fileName, blob.size, "bytes");
+
+    } catch (err) {
+      console.error("Skipping file due to error:", f.file_url, err);
     }
-    const content = await zip.generateAsync({ type: "blob" });
+  }
+
+  const content = await zip.generateAsync({ type: "blob" });
+
+  if (content.size === 0) {
+    console.error("ZIP is empty!");
+  } else {
+    console.log("ZIP size:", content.size);
     saveAs(content, "documents.zip");
-  };
+  }
+};
+
+
 
   return (
     <div className="container mt-4">
       <h3>File Search</h3>
 
-      {/* Filters */}
+      
       <div className="mb-3">
         <select value={majorHead} onChange={e => handleMajorChange(e.target.value)} className="form-select mb-2">
           <option value="">Select Category</option>
@@ -122,7 +162,7 @@ const formatDate = (dateStr) => {
           {minorOptions.map((opt, i) => <option key={i} value={opt}>{opt}</option>)}
         </select>
 
-        {/* Tag Input */}
+       
         <div className="border rounded p-2 position-relative mb-2">
           <div className="d-flex flex-wrap gap-2">
             {tags.map((t, i) => (
@@ -160,36 +200,49 @@ const formatDate = (dateStr) => {
         {results.length > 0 && <button className="btn btn-success ms-2" onClick={downloadAllZip}>Download All ZIP</button>}
       </div>
 
-      {/* Results Table */}
-      {results.length > 0 && (
-        <table className="table table-bordered">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Uploaded By</th>
-              <th>Date</th>
-              <th>Tags</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {results.map(f => (
-              <tr key={f.id}>
-                <td>{f.file_name}</td>
-                <td>{f.uploaded_by}</td>
-                <td>{f.document_date}</td>
-                <td>{f.tags.map(t => <span key={t.tag_name} className="badge bg-secondary me-1">{t.tag_name}</span>)}</td>
-                <td>
-                  <button className="btn btn-sm btn-info me-1" onClick={() => setPreviewFile(f)}>Preview</button>
-                  <button className="btn btn-sm btn-success" onClick={() => downloadFile(f)}>Download</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      
+      {Array.isArray(results) && results.length > 0 && (
+  <table className="table table-bordered">
+    <thead>
+      <tr>
+        <th>Document Id</th>
+        <th>Major Head</th>
+        <th>Minor Head</th>
+        <th>Uploaded By</th>
+        <th>Date</th>
+        <th>Remark</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {results.map(f => (
+        <tr key={f.document_id}>
+          <td>{f.document_id || '-'}</td>
 
-      {/* Preview Modal */}
+          <td>{f.major_head || '-'}</td>
+          <td>{f.minor_head || '-'}</td>
+
+          <td>{f.uploaded_by}</td>
+          <td>{f.document_date}</td>
+          <td>
+            {f.document_remarks}
+          </td>
+          <td>
+            <button className="btn btn-sm btn-info me-1" onClick={() => setPreviewFile(f)}>
+              Preview
+            </button>
+            <button className="btn btn-sm btn-success" onClick={() => downloadFile(f)}>
+              Download
+            </button>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+)}
+
+
+      
       {previewFile && (
         <div className="modal show d-block" onClick={() => setPreviewFile(null)}>
           <div className="modal-dialog modal-lg" onClick={e => e.stopPropagation()}>

@@ -35,7 +35,7 @@ export default function DashboardLayout() {
 
           <li className="nav-item px-3 mb-2">
             <NavLink to="/dashboard/users" className="nav-link text-dark fw-semibold">
-              👥 {!collapsed && 'Users'}
+              👥 {!collapsed && 'Create User'}
             </NavLink>
           </li>
 
